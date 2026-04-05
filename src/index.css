@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  .glass-panel {
+    @apply bg-white/5 backdrop-blur-xl border border-white/10 shadow-glass rounded-xl;
+  }
+}
+
+body {
+  font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
+  color: theme('colors.slate.100');
+  background-color: black;
+  background-image: 
+    radial-gradient(circle at 15% 50%, rgba(52, 211, 153, 0.03), transparent 25%),
+    radial-gradient(circle at 85% 30%, rgba(244, 63, 94, 0.03), transparent 25%);
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+}

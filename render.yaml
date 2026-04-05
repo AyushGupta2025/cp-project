@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: parkguard-server
+    env: node
+    rootDir: server
+    buildCommand: npm install && npm run db:generate && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: 20.x
+      - key: PORT
+        value: 3001
+      - key: DATABASE_URL
+        sync: false
+      - key: FRONTEND_URL
+        sync: false

@@ -1,0 +1,51 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ── ParkingSlot ─────────────────────────────────────────────────────────────
+// Represents a physical parking space with its associated IoT sensor node.
+model ParkingSlot {
+  id           String   @id           // e.g. "A1", "B3"
+  status       String   @default("FREE") // FREE | OCCUPIED | ERROR
+  nodeHealth   Int      @default(100) // 0–100%
+  clockSpeed   Int      @default(1200) // MHz
+  errorDetails String?  // Populated on fault injection
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  tickets Ticket[]
+  logs    AuditLog[]
+}
+
+// ── Ticket ───────────────────────────────────────────────────────────────────
+// A parking session. Created on vehicle entry, closed on exit with a fee.
+model Ticket {
+  id           String      @id @default(cuid())
+  slotId       String
+  slot         ParkingSlot @relation(fields: [slotId], references: [id])
+  licensePlate String
+  entryTime    DateTime    @default(now())
+  exitTime     DateTime?
+  fee          Float?      // Calculated on exit in $
+  createdAt    DateTime    @default(now())
+}
+
+// ── AuditLog ─────────────────────────────────────────────────────────────────
+// Immutable ledger of all system events (entry, exit, fault).
+model AuditLog {
+  id           String      @id @default(cuid())
+  timestamp    DateTime    @default(now())
+  type         String      // "Vehicle Entry" | "Vehicle Exit" | "Hardware Fault"
+  nodeId       String
+  slot         ParkingSlot @relation(fields: [nodeId], references: [id])
+  licensePlate String?
+  hash         String      // Integrity hash
+}
