@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, MapPin, LogOut, Wifi, WifiOff } from 'lucide-react';
+import { LogOut, Wifi, WifiOff } from 'lucide-react';
 import { io as socketIO, Socket } from 'socket.io-client';
 import { ParkingSlot, TelemetryDataPoint, LogEntry } from './types';
 import MapView from './components/MapView';
@@ -180,7 +179,6 @@ export default function App() {
         </div>
 
         <div className="hidden md:flex items-center gap-4">
-          {isAdmin && <LocationDropdown />}
 
           {/* Backend status indicator */}
           <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold border ${
@@ -260,54 +258,6 @@ function NavPill({ active, label, onClick }: { active: boolean, label: string, o
   );
 }
 
-const LOCATIONS = ['Site 1 - Alpha', 'Site 2 - Beta', 'Site 3 - Gamma'];
-
-function LocationDropdown() {
-  const [isOpen, setIsOpen] = useState(false);
-  const [selected, setSelected] = useState(LOCATIONS[0]);
-
-  return (
-    <div className="relative">
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 bg-white/5 hover:bg-white/10 transition-colors rounded-full px-4 py-1.5 border border-white/10 shadow-inner"
-      >
-        <MapPin className="w-3.5 h-3.5 text-slate-400" />
-        <span className="text-slate-400 text-xs font-semibold tracking-wide">LOCATION:</span>
-        <span className="text-slate-200 text-sm font-medium">{selected}</span>
-        <motion.div animate={{ rotate: isOpen ? 180 : 0 }} transition={{ duration: 0.2 }}>
-          <ChevronDown className="w-4 h-4 text-slate-400 ml-1" />
-        </motion.div>
-      </button>
-
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -10, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -10, scale: 0.95 }}
-            transition={{ duration: 0.2 }}
-            className="absolute top-full mt-2 w-full min-w-[180px] right-0 z-50 glass-panel border border-white/10 overflow-hidden"
-          >
-            <div className="flex flex-col py-1">
-              {LOCATIONS.map(loc => (
-                <button
-                  key={loc}
-                  onClick={() => { setSelected(loc); setIsOpen(false); }}
-                  className={`px-4 py-2 text-left text-sm transition-colors
-                    ${selected === loc ? 'bg-indigo-500/20 text-indigo-300 font-semibold' : 'text-slate-300 hover:bg-white/5 hover:text-white'}
-                  `}
-                >
-                  {loc}
-                </button>
-              ))}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-}
 
 // ── Global Cursor Spotlight ──────────────────────────────────────────────────
 const SpotlightRef = React.forwardRef<HTMLDivElement>((_, ref) => (

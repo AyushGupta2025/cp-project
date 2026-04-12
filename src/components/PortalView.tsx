@@ -192,14 +192,6 @@ export default function PortalView({ slots, setSlots, setLogs, backendOnline, ap
                   placeholder="e.g., ABC-1234"
                 />
               </div>
-              {/* Added styling to mimic the "Remember Me" / "Forgot Password" line from mockup */}
-              <div className="flex justify-between items-center text-xs text-white/70">
-                <label className="flex items-center gap-2 cursor-pointer hover:text-white transition-colors">
-                  <input type="checkbox" className="rounded border-white/20 bg-white/5 text-purple-500 focus:ring-0" />
-                  Save Vehicle Details
-                </label>
-                <a href="#" className="hover:text-white transition-colors underline decoration-white/30 hover:decoration-white">Need Help?</a>
-              </div>
 
               <button 
                 onClick={handleAction}
@@ -215,19 +207,6 @@ export default function PortalView({ slots, setSlots, setLogs, backendOnline, ap
                 )}
               </button>
               
-              <div className="relative flex py-2 items-center">
-                  <div className="flex-grow border-t border-white/10"></div>
-                  <span className="flex-shrink-0 mx-4 text-white/40 text-xs uppercase tracking-wider">or</span>
-                  <div className="flex-grow border-t border-white/10"></div>
-              </div>
-
-              <button className="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white font-medium py-3 rounded-xl transition-all duration-300 flex items-center justify-center gap-3">
-                <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center font-bold text-xs text-white">NFC</div> Use Quick Access Pass
-              </button>
-              
-              <div className="text-center mt-6">
-                <p className="text-xs text-white/50">Not registered yet? <a href="#" className="text-white hover:underline transition-all">Create an account</a></p>
-              </div>
             </div>
           </div>
         </div>

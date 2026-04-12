@@ -49,8 +49,10 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
   const handleAdminSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // Simulate authentication logic here
-    if (username && password) {
+    if (username === 'admin@1234' && password === '1234') {
       onLogin('admin');
+    } else {
+      alert('Invalid admin credentials. Please use admin@1234 / 1234 for the demo.');
     }
   };
 

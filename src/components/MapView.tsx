@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { ParkingSlot } from '../types';
 import {
-  Map, Edit3, RotateCcw, Navigation, Target,
+  Map, Navigation, Target,
   Car, AlertTriangle, CheckCircle, Info, Zap, Cpu
 } from 'lucide-react';
 
@@ -12,7 +12,6 @@ interface MapViewProps {
 
 // ─── Grid Types ──────────────────────────────────────────────────────────────
 type CellType = 'ROAD' | 'WALL' | 'SLOT' | 'ENTRY';
-type EditTool = CellType;
 
 interface GridCell {
   type: CellType;
@@ -108,10 +107,8 @@ function bfsFindNearest(
 
 // ─── Main Component ──────────────────────────────────────────────────────────
 export default function MapView({ slots }: MapViewProps) {
-  const [grid, setGrid] = useState<Grid>(createDefaultGrid);
-  const [editMode, setEditMode] = useState(false);
-  const [activeTool, setActiveTool] = useState<EditTool>('ROAD');
-  const [entryPos, setEntryPos] = useState<[number, number]>(DEFAULT_ENTRY);
+  const [grid] = useState<Grid>(createDefaultGrid);
+  const [entryPos] = useState<[number, number]>(DEFAULT_ENTRY);
   const [pathResult, setPathResult] = useState<PathResult | null | undefined>(undefined);
   const [animatedPath, setAnimatedPath] = useState<Set<string>>(new Set());
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
@@ -138,44 +135,10 @@ export default function MapView({ slots }: MapViewProps) {
     }
   }, [grid, entryPos]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Auto-run BFS whenever slots change while not in edit mode
+  // Auto-run BFS whenever slots change
   useEffect(() => {
-    if (!editMode) runBFS();
-  }, [editMode, slots]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const handleCellClick = (r: number, c: number) => {
-    if (!editMode) return;
-    setGrid(prev => {
-      const next = prev.map(row => row.map(cell => ({ ...cell })));
-      if (activeTool === 'ENTRY') {
-        // Clear old entry
-        for (let row = 0; row < next.length; row++)
-          for (let col = 0; col < next[0].length; col++)
-            if (next[row][col].type === 'ENTRY') next[row][col] = { type: 'ROAD' };
-        setEntryPos([r, c]);
-        next[r][c] = { type: 'ENTRY' };
-      } else if (activeTool === 'SLOT') {
-        next[r][c] = { type: 'SLOT', slotId: `X${r}${c}` };
-      } else {
-        next[r][c] = { type: activeTool };
-      }
-      return next;
-    });
-  };
-
-  const resetGrid = () => {
-    setGrid(createDefaultGrid());
-    setEntryPos(DEFAULT_ENTRY);
-    setPathResult(undefined);
-    setAnimatedPath(new Set());
-  };
-
-  const tools: { id: EditTool; label: string; color: string }[] = [
-    { id: 'ROAD', label: 'Road', color: 'bg-white/10 border border-white/20' },
-    { id: 'WALL', label: 'Wall', color: 'bg-zinc-700' },
-    { id: 'SLOT', label: 'Slot', color: 'bg-emerald-500/40 border border-emerald-500/50' },
-    { id: 'ENTRY', label: 'Entry', color: 'bg-indigo-500' },
-  ];
+    runBFS();
+  }, [slots]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const renderCell = (cell: GridCell, r: number, c: number) => {
     const key = `${r},${c}`;
@@ -244,8 +207,8 @@ export default function MapView({ slots }: MapViewProps) {
           initial={false}
           animate={inPath && !isTarget && cell.type === 'ROAD' ? { scale: [1, 1.15, 1] } : {}}
           transition={{ duration: 0.2 }}
-          onClick={() => handleCellClick(r, c)}
-          className={`w-full h-full flex items-center justify-center rounded-[2px] transition-all duration-150 ${cls} ${editMode ? 'cursor-pointer' : ''}`}
+          onClick={() => {}}
+          className={`w-full h-full flex items-center justify-center rounded-[2px] transition-all duration-150 ${cls}`}
           title={!faultInfo ? (cell.slotId ?? cell.type) : undefined}
         >
           {content}
@@ -287,41 +250,13 @@ export default function MapView({ slots }: MapViewProps) {
             <h2 className="text-base font-bold text-white">Smart Parking Navigator</h2>
           </div>
           <div className="flex gap-2">
-            {editMode && (
-              <button onClick={resetGrid}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-zinc-400 border border-white/10 hover:bg-white/10 transition-colors">
-                <RotateCcw className="w-3 h-3" /> Reset
-              </button>
-            )}
-            <button onClick={() => setEditMode(e => !e)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors
-                ${editMode ? 'bg-indigo-500 text-white' : 'border border-white/10 text-zinc-400 hover:bg-white/10'}`}>
-              <Edit3 className="w-3 h-3" /> {editMode ? 'Done Editing' : 'Edit Layout'}
+            <button onClick={runBFS}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/25 transition-colors">
+              <Target className="w-3 h-3" /> Find Nearest
             </button>
-            {!editMode && (
-              <button onClick={runBFS}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/25 transition-colors">
-                <Target className="w-3 h-3" /> Find Nearest
-              </button>
-            )}
           </div>
         </div>
 
-        {/* Edit Tools */}
-        {editMode && (
-          <div className="flex items-center gap-2 mb-3 shrink-0 flex-wrap">
-            <span className="text-xs text-zinc-500 font-medium">Draw:</span>
-            {tools.map(t => (
-              <button key={t.id} onClick={() => setActiveTool(t.id)}
-                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold border transition-all
-                  ${activeTool === t.id ? 'border-indigo-400 text-white' : 'border-white/10 text-zinc-400 hover:text-white'}`}>
-                <span className={`w-3 h-3 rounded-sm shrink-0 ${t.color}`} />
-                {t.label}
-              </button>
-            ))}
-            <span className="text-xs text-zinc-600 ml-auto">Click cells on the grid →</span>
-          </div>
-        )}
 
         {/* Grid */}
         <div className="flex-1 overflow-auto flex items-center justify-center min-h-0 py-2">
@@ -449,17 +384,6 @@ export default function MapView({ slots }: MapViewProps) {
           </div>
         </div>
 
-        {/* Edit hint */}
-        {editMode && (
-          <div data-card className="glass-panel p-4">
-            <p className="text-xs text-zinc-500 leading-relaxed">
-              Select a <span className="text-white">tool</span> and click any grid cell to draw.
-              Set <span className="text-indigo-400">Entry</span> where vehicles enter, add/remove
-              <span className="text-zinc-300"> Walls</span> for obstacles, and define
-              <span className="text-emerald-400"> Slot</span> positions. BFS runs automatically when done.
-            </p>
-          </div>
-        )}
       </div>
     </div>
   );
